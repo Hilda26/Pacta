@@ -76,41 +76,12 @@ async function createGenLayerClient() {
 
 function resolveChain(chains: Record<string, unknown>): GenLayerChain {
   const configuredNetwork = network();
-  const sdkChain = chains[configuredNetwork] ?? chains.simulator;
-  if (configuredNetwork !== "studionet" && sdkChain) {
-    return sdkChain as GenLayerChain;
-  }
-
-  if (configuredNetwork === "studionet") {
-    return buildChain("GenLayer StudioNet", rpcUrlForNetwork());
-  }
-
-  if (configuredNetwork === "localnet") {
-    return buildChain("GenLayer Localnet", rpcUrlForNetwork());
-  }
-
+  const sdkChain = chains[configuredNetwork] ?? chains.localnet;
   if (sdkChain) {
     return sdkChain as GenLayerChain;
   }
 
   throw serviceUnavailable(`Unsupported GenLayer network: ${configuredNetwork}`);
-}
-
-function buildChain(name: string, rpcUrl: string): GenLayerChain {
-  return {
-    id: 61999,
-    name,
-    nativeCurrency: {
-      name: "GEN",
-      symbol: "GEN",
-      decimals: 18
-    },
-    rpcUrls: {
-      default: {
-        http: [rpcUrl]
-      }
-    }
-  };
 }
 
 function network() {

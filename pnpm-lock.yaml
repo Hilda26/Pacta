@@ -123,8 +123,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       genlayer-js:
-        specifier: ^0.1.0
-        version: 0.1.2(bufferutil@4.1.0)(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: ^1.1.8
+        version: 1.1.8(bufferutil@4.1.0)(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       lucide-react:
         specifier: ^1.23.0
         version: 1.23.0(react@19.2.7)
@@ -3248,6 +3248,9 @@ packages:
   genlayer-js@0.1.2:
     resolution: {integrity: sha512-0Fcy7CKPRXJrLZI7e+MKEDd0l47aoywrA50ZDxhMptSWW3ASpXrr+CLwf/nIodt4WnHrIpiHXXrgIJwozIZqaw==}
 
+  genlayer-js@1.1.8:
+    resolution: {integrity: sha512-qlqh8oqR9Ad7FVbIdqIrHfsMPLLJ24ZRHUZ2LGMpw6DX5ySjrEWdV1X93bVIHO44cu9CLGdx8m2ubkPv78/RLg==}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -5190,6 +5193,9 @@ packages:
 
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
+
+  typescript-parsec@0.3.4:
+    resolution: {integrity: sha512-6RD4xOxp26BTZLopNbqT2iErqNhQZZWb5m5F07/UwGhldGvOAKOl41pZ3fxsFp04bNL+PbgMjNfb6IvJAC/uYQ==}
 
   typescript@5.7.2:
     resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
@@ -9997,9 +10003,9 @@ snapshots:
 
   generator-function@2.0.1: {}
 
-  genlayer-js@0.1.2(bufferutil@4.1.0)(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76):
+  genlayer-js@0.1.2(bufferutil@4.1.0)(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76):
     dependencies:
-      eslint-plugin-import: 2.32.0(eslint@9.39.4(jiti@1.21.7))
+      eslint-plugin-import: 2.32.0(eslint@9.39.4(jiti@2.7.0))
       viem: 2.54.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
@@ -10012,9 +10018,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  genlayer-js@0.1.2(bufferutil@4.1.0)(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76):
+  genlayer-js@1.1.8(bufferutil@4.1.0)(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76):
     dependencies:
-      eslint-plugin-import: 2.32.0(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-import: 2.32.0(eslint@9.39.4(jiti@1.21.7))
+      typescript-parsec: 0.3.4
       viem: 2.54.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
@@ -12237,6 +12244,8 @@ snapshots:
       reflect.getprototypeof: 1.0.10
 
   typedarray@0.0.6: {}
+
+  typescript-parsec@0.3.4: {}
 
   typescript@5.7.2: {}
 

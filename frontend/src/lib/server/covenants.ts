@@ -90,7 +90,7 @@ export async function getCovenantForUser(user: AuthenticatedUser, id: string) {
 export async function submitEvaluation(
   user: AuthenticatedUser,
   id: string,
-  input: { reason?: string | undefined; contractCovenantId?: string | undefined }
+  input: { reason?: string | undefined; contractCovenantId?: string | undefined; contractTxHash?: string | undefined }
 ) {
   const covenant = await findCovenant(id);
   const canSubmit =
@@ -117,7 +117,12 @@ export async function submitEvaluation(
     .from("covenants")
     .update({
       status: "EVALUATION_PENDING",
-      contract_covenant_id: input.contractCovenantId ?? covenant.contractCovenantId
+      contract_covenant_id: input.contractCovenantId ?? covenant.contractCovenantId,
+      metadata: appendContractTransaction(covenant.metadata, {
+        action: "request_evaluation",
+        txHash: input.contractTxHash,
+        createdAt: new Date().toISOString()
+      })
     })
     .eq("id", id);
   throwIfError(error, "Submit covenant evaluation");
@@ -135,6 +140,39 @@ export async function submitEvaluation(
   return findCovenant(id);
 }
 
+export async function linkCovenantContract(
+  user: AuthenticatedUser,
+  id: string,
+  input: { contractCovenantId: string; txHash: string; action: "create_covenant" }
+) {
+  const covenant = await findCovenant(id);
+  if (covenant.creatorId !== user.id) {
+    throw forbidden("Only the covenant creator can link the contract covenant.");
+  }
+
+  const { error } = await supabaseAdmin()
+    .from("covenants")
+    .update({
+      contract_covenant_id: input.contractCovenantId,
+      metadata: appendContractTransaction(covenant.metadata, {
+        action: input.action,
+        txHash: input.txHash,
+        createdAt: new Date().toISOString()
+      })
+    })
+    .eq("id", id);
+  throwIfError(error, "Link contract covenant");
+
+  await recordAudit({
+    actorId: user.id,
+    action: "covenant.contract_linked",
+    target: id,
+    metadata: { contractCovenantId: input.contractCovenantId, txHash: input.txHash }
+  });
+
+  return findCovenant(id);
+}
+
 export async function findCovenant(id: string) {
   const { data, error } = await supabaseAdmin().from("covenants").select(covenantSelect).eq("id", id).maybeSingle();
   throwIfError(error, "Find covenant");
@@ -142,4 +180,19 @@ export async function findCovenant(id: string) {
     throw notFound("Covenant not found.");
   }
   return mapCovenant(data);
+}
+
+function appendContractTransaction(
+  metadata: Record<string, unknown>,
+  transaction: { action: string; txHash?: string | undefined; createdAt: string }
+) {
+  if (!transaction.txHash) {
+    return metadata;
+  }
+
+  const existing = Array.isArray(metadata.contractTransactions) ? metadata.contractTransactions : [];
+  return {
+    ...metadata,
+    contractTransactions: [...existing, transaction]
+  };
 }

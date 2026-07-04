@@ -27,7 +27,14 @@ export const createCovenantSchema = z.object({
 
 export const submitEvaluationSchema = z.object({
   reason: z.string().min(1).max(1000).optional(),
-  contractCovenantId: z.string().min(1).max(120).optional()
+  contractCovenantId: z.string().min(1).max(120).optional(),
+  contractTxHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional()
+});
+
+export const linkContractSchema = z.object({
+  contractCovenantId: z.string().min(1).max(120),
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
+  action: z.literal("create_covenant")
 });
 
 export const evidenceTypes = [

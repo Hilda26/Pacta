@@ -17,6 +17,17 @@ Pacta uses the current `genlayer-js` SDK patterns:
 
 Server-side reads are isolated in `frontend/src/lib/server/genlayer`. Browser wallet writes are isolated in `frontend/src/lib/genlayer`.
 
+## Write Flow
+
+The covenant detail page now submits real StudioNet transactions before updating Supabase read models:
+
+- `create_covenant` links the Supabase covenant ID to the Intelligent Contract covenant ID.
+- `bond_covenant` is payable in GEN wei and stores the returned transaction hash on the bond position.
+- `submit_evidence` submits evidence references on-chain and stores the returned transaction hash in evidence metadata.
+- `request_evaluation` starts GenLayer validator evaluation and stores the returned transaction hash in covenant metadata.
+
+The frontend uses `client.connect("studionet")`, `writeContract`, and `waitForTransactionReceipt` with `TransactionStatus.ACCEPTED`.
+
 ## Event Sync
 
 The contract exposes:

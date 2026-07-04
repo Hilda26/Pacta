@@ -44,7 +44,13 @@ export const covenantsApi = {
       body: jsonBody(input)
     });
   },
-  submitEvaluation(id: string, input: { reason?: string; contractCovenantId?: string }) {
+  linkContract(id: string, input: { contractCovenantId: string; txHash: string; action: "create_covenant" }) {
+    return apiFetch<Covenant>(`/covenants/${id}/contract-link`, {
+      method: "POST",
+      body: jsonBody(input)
+    });
+  },
+  submitEvaluation(id: string, input: { reason?: string; contractCovenantId?: string; contractTxHash?: string }) {
     return apiFetch<Covenant>(`/covenants/${id}/submit-evaluation`, {
       method: "POST",
       body: jsonBody(input)

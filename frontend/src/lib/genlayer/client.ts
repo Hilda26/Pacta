@@ -1,20 +1,22 @@
+import type { ContractActionPayload } from "./actions";
 import { assertPactaContractConfig, PACTA_GENLAYER_NETWORK, PACTA_GENLAYER_RPC_URL } from "./config";
 
 type GenLayerClient = {
-  readContract: (params: { address: string; functionName: string; args: unknown[] }) => Promise<unknown>;
-  writeContract?: (params: {
+  readContract: (params: { address: string; functionName: string; args?: unknown[] }) => Promise<unknown>;
+  writeContract: (params: {
     account?: unknown;
     address: string;
     functionName: string;
-    args: unknown[];
-    value?: bigint;
+    args?: unknown[];
+    value: bigint;
   }) => Promise<string>;
-  waitForTransactionReceipt?: (params: {
+  waitForTransactionReceipt: (params: {
     hash: string;
-    status: string;
+    status: unknown;
     interval?: number;
     retries?: number;
   }) => Promise<unknown>;
+  connect?: (network?: string) => Promise<void>;
 };
 
 type GenLayerChain = {
@@ -26,7 +28,19 @@ type GenLayerChain = {
 
 export async function createPactaGenLayerClient(): Promise<GenLayerClient> {
   const genlayer = (await import("genlayer-js")) as unknown as {
-    createAccount: () => unknown;
+    createClient: (params: Record<string, unknown>) => GenLayerClient;
+  };
+  const chains = (await import("genlayer-js/chains")) as Record<string, unknown>;
+  const chain = resolveChain(chains);
+
+  return genlayer.createClient({
+    chain,
+    endpoint: PACTA_GENLAYER_RPC_URL
+  });
+}
+
+export async function createPactaGenLayerWalletClient(walletAddress: string): Promise<GenLayerClient> {
+  const genlayer = (await import("genlayer-js")) as unknown as {
     createClient: (params: Record<string, unknown>) => GenLayerClient;
   };
   const chains = (await import("genlayer-js/chains")) as Record<string, unknown>;
@@ -35,8 +49,44 @@ export async function createPactaGenLayerClient(): Promise<GenLayerClient> {
   return genlayer.createClient({
     chain,
     endpoint: PACTA_GENLAYER_RPC_URL,
-    account: genlayer.createAccount()
+    account: walletAddress as `0x${string}`,
+    provider: getEthereumProvider()
   });
+}
+
+export async function writePactaContract(input: {
+  walletAddress: string;
+  action: ContractActionPayload;
+  waitFor?: "ACCEPTED" | "FINALIZED";
+  onStatus?: (status: string) => void;
+}) {
+  const { contractAddress } = assertPactaContractConfig();
+  const { TransactionStatus } = (await import("genlayer-js/types")) as {
+    TransactionStatus: Record<"ACCEPTED" | "FINALIZED", unknown>;
+  };
+  const client = await createPactaGenLayerWalletClient(input.walletAddress);
+
+  input.onStatus?.("Switching wallet to StudioNet");
+  await client.connect?.(PACTA_GENLAYER_NETWORK);
+
+  input.onStatus?.("Waiting for wallet approval");
+  const txHash = await client.writeContract({
+    address: contractAddress,
+    functionName: input.action.functionName,
+    args: input.action.args,
+    value: BigInt(input.action.value ?? "0")
+  });
+
+  input.onStatus?.("Transaction submitted");
+  const receipt = await client.waitForTransactionReceipt({
+    hash: txHash,
+    status: TransactionStatus[input.waitFor ?? "ACCEPTED"],
+    interval: 5_000,
+    retries: 60
+  });
+
+  input.onStatus?.(`${input.waitFor ?? "ACCEPTED"}`);
+  return { txHash, receipt };
 }
 
 export async function readPactaContract<T>(functionName: string, args: unknown[] = []): Promise<T> {
@@ -60,8 +110,8 @@ export async function readPactaContract<T>(functionName: string, args: unknown[]
 }
 
 function resolveChain(chains: Record<string, unknown>): GenLayerChain {
-  const sdkChain = chains[PACTA_GENLAYER_NETWORK] ?? chains.simulator;
-  if (PACTA_GENLAYER_NETWORK !== "studionet" && sdkChain) {
+  const sdkChain = chains[PACTA_GENLAYER_NETWORK] ?? chains.localnet;
+  if (sdkChain) {
     return sdkChain as GenLayerChain;
   }
 
@@ -79,4 +129,11 @@ function resolveChain(chains: Record<string, unknown>): GenLayerChain {
       }
     }
   };
+}
+
+function getEthereumProvider() {
+  if (typeof window === "undefined" || !window.ethereum) {
+    throw new Error("No EVM wallet detected.");
+  }
+  return window.ethereum;
 }
