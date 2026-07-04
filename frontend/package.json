@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.110.0",
     "@tanstack/react-query": "^5.62.7",
     "clsx": "^2.1.1",
     "genlayer-js": "^0.1.0",

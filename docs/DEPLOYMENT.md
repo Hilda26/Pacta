@@ -2,11 +2,11 @@
 
 ## Targets
 
-- Frontend: Vercel
-- Backend platform: Supabase
+- Frontend and application API: Vercel
+- Backend provider: Supabase
 - Database: Supabase Postgres, accessed directly with `@supabase/supabase-js`
-- Storage: Supabase Storage signed upload URLs
-- Application API: NestJS service, with future option to migrate selected endpoints to Supabase Edge Functions
+- Storage: Supabase Storage
+- Application API: Next.js route handlers in `frontend/src/app/api`
 - Intelligent Contract: GenLayer Studio / StudioNet
 
 ## Supabase Setup
@@ -25,7 +25,7 @@ supabase/migrations/202607040002_service_role_grants.sql
 python scripts/run_local_stack.py --start
 ```
 
-The local script checks environment setup and starts frontend/backend dev servers. Database schema application happens through Supabase SQL migrations.
+The local script checks environment setup and starts the Next.js app. Local API requests are served from `http://localhost:3000/api`. Database schema application happens through Supabase SQL migrations.
 
 ## GenLayer
 

@@ -1,13 +1,13 @@
 # Supabase Backend
 
-Supabase is the approved backend platform for Pacta. Pacta now uses Supabase directly rather than Prisma.
+Supabase is the approved backend provider for Pacta. Pacta uses Supabase directly rather than Prisma.
 
 ## Runtime Model
 
-- NestJS remains the application API boundary for wallet sessions, CSRF protection, GenLayer synchronization, audit logging, and authorization.
+- Next.js route handlers are the production API boundary for wallet sessions, CSRF protection, GenLayer reads, audit logging, and authorization.
 - Supabase Postgres stores Pacta domain data.
 - Supabase Storage stores evidence files.
-- `@supabase/supabase-js` is the backend database and storage client.
+- `@supabase/supabase-js` is the server-side database and storage client.
 
 ## Required Environment
 
@@ -33,8 +33,8 @@ Run these SQL files in order in the Supabase SQL editor or via Supabase CLI:
 2. `supabase/migrations/202607040001_pacta_storage_bucket.sql`
 3. `supabase/migrations/202607040002_service_role_grants.sql`
 
-The first migration creates Pacta tables, indexes, update triggers, and transactional RPC functions used by the backend. The second migration creates the private evidence bucket. The third grants the backend service role access to Pacta tables and functions.
+The first migration creates Pacta tables, indexes, update triggers, and transactional RPC functions used by the API. The second migration creates the private evidence bucket. The third grants the service role access to Pacta tables and functions.
 
 ## Storage Uploads
 
-The backend creates signed upload URLs with Supabase Storage. S3 access keys are no longer required for the default Pacta storage path.
+The API records Supabase Storage evidence references. S3 access keys are not required for Pacta's default storage path.

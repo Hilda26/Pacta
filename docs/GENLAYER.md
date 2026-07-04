@@ -15,7 +15,7 @@ Pacta uses the current `genlayer-js` SDK patterns:
 - `client.writeContract({ address, functionName, args, value })`
 - `client.waitForTransactionReceipt({ hash, status })`
 
-Backend reads and event synchronization are isolated in `backend/src/modules/genlayer`. Browser wallet writes are isolated in `frontend/src/lib/genlayer`.
+Server-side reads are isolated in `frontend/src/lib/server/genlayer`. Browser wallet writes are isolated in `frontend/src/lib/genlayer`.
 
 ## Event Sync
 
@@ -24,7 +24,7 @@ The contract exposes:
 - `get_event_count()`
 - `get_event(event_id)`
 
-The backend internal endpoint `POST /genlayer/sync-events` polls those views and mirrors events into PostgreSQL through the contract-event ingestion service. It requires `x-pacta-internal-token`.
+Production contract state reads are exposed through Next.js API routes under `/api/genlayer`.
 
 ## Environment
 
@@ -37,4 +37,4 @@ NEXT_PUBLIC_GENLAYER_RPC_URL=https://studio.genlayer.com/api
 NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS=0x6a7d7807612a5485e83E53c776fcfe35fE685C59
 ```
 
-Supabase is approved for Pacta backend data and storage. The NestJS application API remains the server boundary unless we explicitly migrate endpoints to Supabase Edge Functions.
+Supabase is approved for Pacta backend data and storage. The Vercel-hosted Next.js API routes are the server boundary.

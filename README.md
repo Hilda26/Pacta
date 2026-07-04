@@ -4,8 +4,8 @@ Pacta is a bond-backed personal covenant registry powered by GenLayer. Users cre
 
 ## Stack
 
-- Frontend: Next.js, TypeScript, Tailwind CSS
-- Backend: NestJS API with direct Supabase access
+- Web app and API: Next.js, TypeScript, Tailwind CSS, Vercel route handlers
+- Backend provider: Supabase Postgres and Supabase Storage
 - Database: Supabase Postgres with SQL migrations
 - Contracts: GenLayer Intelligent Contract deployed to StudioNet
 - Storage: Supabase Storage signed upload URLs
@@ -15,15 +15,15 @@ Pacta is a bond-backed personal covenant registry powered by GenLayer. Users cre
 
 ## Repository Layout
 
-- `frontend/` - Next.js user experience
-- `backend/` - NestJS REST API and workers
+- `frontend/` - Next.js user experience and production API routes
+- `backend/` - non-deployed NestJS service source retained for local reference
 - `contracts/` - GenLayer Intelligent Contract source and tests
 - `supabase/` - Supabase SQL migrations
 - `database/` - migration validation scripts
 - `shared/` - shared schemas and TypeScript types
 - `docs/` - product, architecture, API, database, security, deployment, and testing docs
 - `scripts/` - executable project automation
-- `infra/` - local infrastructure configuration
+- `infra/` - deployment metadata for approved providers
 - `monitoring/` - observability configuration
 - `security/` - threat model and security checklists
 - `e2e/` - Playwright flows
