@@ -1,6 +1,15 @@
 {
-  "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "jsx": "preserve",
     "allowJs": false,
     "noEmit": true,
@@ -13,9 +22,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@pacta/shared": [
-        "../shared/src/index.ts"
       ]
     },
     "lib": [
