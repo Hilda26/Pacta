@@ -1,0 +1,14 @@
+{
+  "name": "@pacta/database",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "node ./scripts/validate-supabase-sql.mjs",
+    "lint": "node ./scripts/validate-supabase-sql.mjs",
+    "typecheck": "node ./scripts/validate-supabase-sql.mjs",
+    "test": "node ./scripts/validate-supabase-sql.mjs",
+    "migrate:instructions": "node ./scripts/print-migration-instructions.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

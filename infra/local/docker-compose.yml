@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pacta-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pacta
+      POSTGRES_PASSWORD: pacta
+      POSTGRES_DB: pacta
+    ports:
+      - "5432:5432"
+    volumes:
+      - pacta_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pacta -d pacta"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pacta_postgres_data:

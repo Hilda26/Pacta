@@ -1,0 +1,15 @@
+{
+  "name": "@pacta/e2e",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test": "playwright test",
+    "build": "echo e2e has no build step",
+    "lint": "echo e2e lint pending",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "typescript": "^5.7.2"
+  }
+}

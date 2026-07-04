@@ -1,0 +1,14 @@
+packages:
+  - "frontend"
+  - "backend"
+  - "database"
+  - "shared"
+  - "e2e"
+allowBuilds:
+  '@nestjs/core': true
+  '@scarf/scarf': true
+  bufferutil: true
+  esbuild: true
+  keccak: true
+  sharp: true
+  utf-8-validate: true
