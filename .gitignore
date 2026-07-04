@@ -10,6 +10,7 @@ coverage/
 *.log
 *.tsbuildinfo
 .local/
+.vercel/
 .pytest_cache/
 __pycache__/
 .venv/
