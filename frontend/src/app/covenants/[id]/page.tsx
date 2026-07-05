@@ -19,6 +19,7 @@ import {
   type ContractActionPayload
 } from "@/lib/genlayer/actions";
 import { writePactaContract } from "@/lib/genlayer/client";
+import { PACTA_GENLAYER_EXPLORER_URL } from "@/lib/genlayer/config";
 import { requestWalletAddress } from "@/lib/auth/wallet";
 import { useRequireSession } from "@/hooks/use-session";
 
@@ -390,6 +391,14 @@ function formatContractError(caught: unknown, fallback: string) {
   return message || fallback;
 }
 
+function buildExplorerUrl(txHash: string) {
+  if (PACTA_GENLAYER_EXPLORER_URL.includes("{txHash}")) {
+    return PACTA_GENLAYER_EXPLORER_URL.replace("{txHash}", encodeURIComponent(txHash));
+  }
+
+  return PACTA_GENLAYER_EXPLORER_URL;
+}
+
 function extractErrorMessage(caught: unknown): string {
   if (caught instanceof Error) {
     return caught.message;
@@ -470,10 +479,10 @@ function TransactionProgress({ statuses, hashes }: { statuses: Record<string, st
               <code className="min-w-0 flex-1 break-all rounded bg-stone-100 px-2 py-1 text-stone-800">{hashes[label]}</code>
               <a
                 className="inline-flex size-8 items-center justify-center rounded-md border border-stone-300 text-stone-800 hover:bg-stone-50"
-                href="https://genlayer-explorer.vercel.app"
+                href={buildExplorerUrl(hashes[label])}
                 target="_blank"
                 rel="noreferrer"
-                title="Open GenLayer explorer"
+                title="Open GenLayer portal"
               >
                 <ExternalLink aria-hidden className="size-4" />
               </a>
