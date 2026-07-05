@@ -1,4 +1,6 @@
 type EthereumProvider = {
+  isMetaMask?: boolean;
+  providers?: EthereumProvider[];
   request<T = unknown>(args: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<T>;
 };
 
@@ -30,9 +32,11 @@ export function hasInjectedWallet() {
   return typeof window !== "undefined" && Boolean(window.ethereum);
 }
 
-function getEthereumProvider() {
+export function getEthereumProvider() {
   if (typeof window === "undefined" || !window.ethereum) {
     throw new Error("No EVM wallet detected.");
   }
-  return window.ethereum;
+
+  const providers = window.ethereum.providers;
+  return providers?.find((provider) => provider.isMetaMask) ?? window.ethereum;
 }

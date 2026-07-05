@@ -17,7 +17,6 @@ export default function NewCovenantPage() {
     const date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 90);
     return date.toISOString().slice(0, 10);
   }, []);
-  const [metadata, setMetadata] = useState('{"useCase":"mentorship","disputeWindowSeconds":604800}');
   const [error, setError] = useState<string | null>(null);
   const create = useMutation({
     mutationFn: covenantsApi.create,
@@ -32,28 +31,20 @@ export default function NewCovenantPage() {
     event.preventDefault();
     setError(null);
     const form = new FormData(event.currentTarget);
-    let parsedMetadata: Record<string, unknown> | undefined;
-    try {
-      parsedMetadata = metadata.trim() ? (JSON.parse(metadata) as Record<string, unknown>) : undefined;
-    } catch {
-      setError("Metadata must be valid JSON.");
-      return;
-    }
-
-            const payload: Parameters<typeof covenantsApi.create>[0] = {
-              title: String(form.get("title") ?? ""),
-              promise: String(form.get("promise") ?? ""),
-              successCriteria: String(form.get("successCriteria") ?? ""),
-              evidenceRequirements: String(form.get("evidenceRequirements") ?? ""),
-              deadlineAt: new Date(String(form.get("deadlineAt"))).toISOString(),
-              requiredBondAmount: String(form.get("requiredBondAmount") ?? ""),
-              privacy: String(form.get("privacy") ?? "PRIVATE") as "PRIVATE" | "UNLISTED" | "PUBLIC"
-            };
-            if (parsedMetadata) {
-              payload.metadata = parsedMetadata;
-            }
-            create.mutate(payload);
-          }
+    const payload: Parameters<typeof covenantsApi.create>[0] = {
+      title: String(form.get("title") ?? ""),
+      promise: String(form.get("promise") ?? ""),
+      successCriteria: String(form.get("successCriteria") ?? ""),
+      evidenceRequirements: String(form.get("evidenceRequirements") ?? ""),
+      deadlineAt: new Date(String(form.get("deadlineAt"))).toISOString(),
+      requiredBondAmount: String(form.get("requiredBondAmount") ?? ""),
+      privacy: String(form.get("privacy") ?? "PRIVATE") as "PRIVATE" | "UNLISTED" | "PUBLIC",
+      metadata: {
+        disputeWindowSeconds: 604800
+      }
+    };
+    create.mutate(payload);
+  }
 
   return (
     <AppShell>
@@ -75,7 +66,6 @@ export default function NewCovenantPage() {
                 <option value="PUBLIC">Public</option>
               </SelectField>
             </div>
-            <TextAreaField label="Metadata JSON" value={metadata} onChange={(event) => setMetadata(event.target.value)} />
             {error ? <p className="rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{error}</p> : null}
             <div>
               <Button disabled={create.isPending}>

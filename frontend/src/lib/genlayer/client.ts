@@ -1,3 +1,4 @@
+import { getEthereumProvider } from "@/lib/auth/wallet";
 import type { ContractActionPayload } from "./actions";
 import { assertPactaContractConfig, PACTA_GENLAYER_NETWORK, PACTA_GENLAYER_RPC_URL } from "./config";
 
@@ -131,9 +132,3 @@ function resolveChain(chains: Record<string, unknown>): GenLayerChain {
   };
 }
 
-function getEthereumProvider() {
-  if (typeof window === "undefined" || !window.ethereum) {
-    throw new Error("No EVM wallet detected.");
-  }
-  return window.ethereum;
-}

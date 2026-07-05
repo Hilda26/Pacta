@@ -1,6 +1,6 @@
 "use client";
 
-import { Clipboard, ExternalLink, RefreshCw, Scale, Send, WalletCards } from "lucide-react";
+import { ExternalLink, RefreshCw, Scale, Send, WalletCards } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
@@ -42,7 +42,6 @@ export default function CovenantDetailPage() {
   const id = params.id;
   const queryClient = useQueryClient();
   const covenant = useQuery({ queryKey: ["covenant", id], queryFn: () => covenantsApi.get(id), enabled: Boolean(id) });
-  const [copied, setCopied] = useState<string | null>(null);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
   const [bondError, setBondError] = useState<string | null>(null);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
@@ -56,21 +55,6 @@ export default function CovenantDetailPage() {
     enabled: Boolean(covenant.data?.contractCovenantId)
   });
   const createAction = useMemo(() => (covenant.data ? buildCreateCovenantAction(covenant.data) : null), [covenant.data]);
-  const bondAction = useMemo(
-    () =>
-      covenant.data
-        ? buildBondCovenantAction(
-            covenant.data.contractCovenantId ?? covenant.data.id,
-            "CREATOR",
-            genToWei(String(covenant.data.requiredBondAmount))
-          )
-        : null,
-    [covenant.data]
-  );
-  const evaluationAction = useMemo(
-    () => (covenant.data ? buildEvaluationAction(covenant.data.contractCovenantId ?? covenant.data.id) : null),
-    [covenant.data]
-  );
   const evidence = useMutation({
     mutationFn: (input: Parameters<typeof evidenceApi.create>[1]) => evidenceApi.create(id, input),
     onSuccess: async () => {
@@ -97,11 +81,6 @@ export default function CovenantDetailPage() {
     onError: (caught) => setEvaluationError(caught instanceof Error ? caught.message : "Could not request evaluation.")
   });
 
-  async function copy(label: string, value: unknown) {
-    await navigator.clipboard.writeText(JSON.stringify(value, null, 2));
-    setCopied(label);
-    window.setTimeout(() => setCopied(null), 1800);
-  }
 
   async function runContractTransaction(label: string, action: ContractActionPayload) {
     const signedInWallet = session.data?.user.walletAddress;
@@ -147,7 +126,7 @@ export default function CovenantDetailPage() {
       await queryClient.invalidateQueries({ queryKey: ["covenant", id] });
       await queryClient.invalidateQueries({ queryKey: ["covenants"] });
     } catch (caught) {
-      setContractError(caught instanceof Error ? caught.message : "Could not create covenant on StudioNet.");
+      setContractError(formatContractError(caught, "Could not create covenant on StudioNet."));
     }
   }
 
@@ -159,15 +138,7 @@ export default function CovenantDetailPage() {
     }
 
     const form = new FormData(event.currentTarget);
-    let structuredMetadata: Record<string, unknown> | undefined;
-    try {
-      const raw = String(form.get("structuredMetadata") ?? "").trim();
-      structuredMetadata = raw ? (JSON.parse(raw) as Record<string, unknown>) : undefined;
-    } catch {
-      setEvidenceError("Evidence metadata must be valid JSON.");
-      return;
-    }
-
+    const notes = String(form.get("notes") ?? "").trim();
     const type = String(form.get("type")) as EvidenceType;
     const contentHash = String(form.get("contentHash"));
     const sourceUrl = String(form.get("sourceUrl") || "");
@@ -192,11 +163,11 @@ export default function CovenantDetailPage() {
           type,
           uri,
           contentHash,
-          metadataHash: await metadataHash(structuredMetadata)
+          metadataHash: await metadataHash({ notes, type, uri, contentHash })
         })
       );
       payload.structuredMetadata = {
-        ...(structuredMetadata ?? {}),
+        notes,
         onChain: {
           txHash,
           submittedAt: new Date().toISOString()
@@ -204,7 +175,7 @@ export default function CovenantDetailPage() {
       };
       await evidence.mutateAsync(payload);
     } catch (caught) {
-      setEvidenceError(caught instanceof Error ? caught.message : "Could not submit evidence on StudioNet.");
+      setEvidenceError(formatContractError(caught, "Could not submit evidence on StudioNet."));
     }
   }
 
@@ -218,7 +189,7 @@ export default function CovenantDetailPage() {
     const form = new FormData(event.currentTarget);
     const amount = String(form.get("amount"));
     const role = String(form.get("role")) as "CREATOR" | "CO_STAKER" | "COUNTERPARTY";
-    const contractCovenantId = String(form.get("contractCovenantId") || covenant.data.contractCovenantId);
+    const contractCovenantId = covenant.data.contractCovenantId;
 
     try {
       const txHash = await runContractTransaction(
@@ -232,7 +203,7 @@ export default function CovenantDetailPage() {
         contractCovenantId
       });
     } catch (caught) {
-      setBondError(caught instanceof Error ? caught.message : "Could not bond GEN on StudioNet.");
+      setBondError(formatContractError(caught, "Could not bond GEN on StudioNet."));
     }
   }
 
@@ -244,7 +215,7 @@ export default function CovenantDetailPage() {
     }
 
     const form = new FormData(event.currentTarget);
-    const contractCovenantId = String(form.get("contractCovenantId") || covenant.data.contractCovenantId);
+    const contractCovenantId = covenant.data.contractCovenantId;
     try {
       const txHash = await runContractTransaction("evaluation", buildEvaluationAction(contractCovenantId));
       const reason = String(form.get("reason") ?? "").trim();
@@ -257,7 +228,7 @@ export default function CovenantDetailPage() {
       }
       await evaluation.mutateAsync(payload);
     } catch (caught) {
-      setEvaluationError(caught instanceof Error ? caught.message : "Could not request evaluation on StudioNet.");
+      setEvaluationError(formatContractError(caught, "Could not request evaluation on StudioNet."));
     }
   }
 
@@ -302,7 +273,7 @@ export default function CovenantDetailPage() {
                   <TextField name="sourceUrl" label="Source URL" placeholder="https://..." />
                   <TextField name="storageUri" label="Storage URI" placeholder="r2://bucket/key" />
                 </div>
-                <TextAreaField name="structuredMetadata" label="Structured metadata JSON" placeholder='{"witness":"0x..."}' />
+                <TextAreaField name="notes" label="Notes for validators (optional)" placeholder="Summarize what this evidence proves." />
                 {evidenceError ? <p className="rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{evidenceError}</p> : null}
                 <div>
                   <Button disabled={evidence.isPending || Boolean(activeTransaction)}>
@@ -324,7 +295,6 @@ export default function CovenantDetailPage() {
                     <option value="COUNTERPARTY">Counterparty</option>
                   </SelectField>
                 </div>
-                <TextField name="contractCovenantId" label="Contract covenant id" defaultValue={covenant.data.contractCovenantId ?? covenant.data.id} />
                 {bondError ? <p className="rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{bondError}</p> : null}
                 <div>
                   <Button disabled={bond.isPending || Boolean(activeTransaction)}>
@@ -339,7 +309,6 @@ export default function CovenantDetailPage() {
               <h2 className="text-xl font-bold text-stone-950">Evaluation</h2>
               <form className="mt-5 grid gap-4" onSubmit={submitEvaluation}>
                 <TextAreaField name="reason" label="Reason" placeholder="Evidence package is complete and ready for validator review." />
-                <TextField name="contractCovenantId" label="Contract covenant id" defaultValue={covenant.data.contractCovenantId ?? covenant.data.id} />
                 {evaluationError ? <p className="rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{evaluationError}</p> : null}
                 <div>
                   <Button disabled={evaluation.isPending || Boolean(activeTransaction)}>
@@ -355,20 +324,17 @@ export default function CovenantDetailPage() {
             <Panel>
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-bold text-stone-950">Contract actions</h2>
-                {copied ? <span className="text-xs font-semibold text-emerald-800">{copied} copied</span> : null}
               </div>
               {contractError ? <p className="mt-4 rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{contractError}</p> : null}
               <div className="mt-4 grid gap-3">
                 <ActionRow
                   label="Create"
-                  value={createAction}
-                  onCopy={() => copy("Create", createAction)}
                   actionLabel={covenant.data.contractCovenantId ? "Created" : activeTransaction === "create" ? "Creating" : "Create on StudioNet"}
                   onRun={createOnChain}
                   disabled={Boolean(covenant.data.contractCovenantId) || Boolean(activeTransaction) || !createAction}
                 />
-                <ActionRow label="Bond" value={bondAction} onCopy={() => copy("Bond", bondAction)} />
-                <ActionRow label="Evaluate" value={evaluationAction} onCopy={() => copy("Evaluate", evaluationAction)} />
+                <ActionRow label="Bond GEN" description="After the covenant is created on StudioNet, use the bond form below to stake GEN." />
+                <ActionRow label="Request evaluation" description="After evidence and a bond are saved, request validator review from the evaluation form." />
               </div>
               <TransactionProgress statuses={transactionStatus} hashes={transactionHashes} />
             </Panel>
@@ -404,17 +370,29 @@ function ReadBlock({ label, value }: { label: string; value: string }) {
   );
 }
 
+function formatContractError(caught: unknown, fallback: string) {
+  const message = caught instanceof Error ? caught.message : String(caught || fallback);
+  if (/ethereum|provider|Cannot redefine property|Cannot set property/i.test(message)) {
+    return "Wallet provider conflict detected. Disable duplicate wallet extensions, keep MetaMask or one EVM wallet active, refresh the page, then try Create on StudioNet again.";
+  }
+  if (/user rejected|rejected request|denied/i.test(message)) {
+    return "Wallet approval was rejected. Open your wallet and approve the StudioNet transaction to continue.";
+  }
+  if (/insufficient|funds|balance/i.test(message)) {
+    return "Your wallet may not have enough StudioNet GEN for this transaction.";
+  }
+  return message || fallback;
+}
+
 function ActionRow({
   label,
-  value,
-  onCopy,
+  description,
   onRun,
   actionLabel,
   disabled
 }: {
   label: string;
-  value: unknown;
-  onCopy: () => void;
+  description?: string;
   onRun?: () => void;
   actionLabel?: string;
   disabled?: boolean;
@@ -422,27 +400,17 @@ function ActionRow({
   return (
     <div className="min-w-0 rounded-md border border-stone-200 bg-stone-50 p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="min-w-0 font-semibold text-stone-900">{label}</span>
-        <div className="flex shrink-0 items-center gap-2">
-          {onRun ? (
-            <Button type="button" onClick={onRun} disabled={disabled}>
-              <WalletCards aria-hidden className="size-4" />
-              {actionLabel ?? "Send"}
-            </Button>
-          ) : null}
-          <button
-            className="inline-flex size-9 items-center justify-center rounded-md border border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
-            type="button"
-            onClick={onCopy}
-            title={`Copy ${label} action`}
-          >
-            <Clipboard aria-hidden className="size-4" />
-          </button>
+        <div className="min-w-0">
+          <span className="font-semibold text-stone-900">{label}</span>
+          {description ? <p className="mt-1 text-sm leading-6 text-stone-600">{description}</p> : null}
         </div>
+        {onRun ? (
+          <Button type="button" onClick={onRun} disabled={disabled}>
+            <WalletCards aria-hidden className="size-4" />
+            {actionLabel ?? "Send"}
+          </Button>
+        ) : null}
       </div>
-      <pre className="mt-3 max-h-40 overflow-auto rounded-md bg-white p-3 text-xs leading-5 text-stone-700">
-        {JSON.stringify(value, null, 2)}
-      </pre>
     </div>
   );
 }
