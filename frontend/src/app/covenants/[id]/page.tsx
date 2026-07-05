@@ -97,18 +97,24 @@ export default function CovenantDetailPage() {
     setContractError(null);
     setActiveTransaction(label);
     setTransactionStatus((current) => ({ ...current, [label]: "Preparing transaction" }));
+    let submittedHash: string | null = null;
 
     try {
       const result = await writePactaContract({
         walletAddress: signedInWallet,
         action,
         waitFor: "ACCEPTED",
+        onHash: (txHash) => {
+          submittedHash = txHash;
+          setTransactionHashes((current) => ({ ...current, [label]: txHash }));
+          setTransactionStatus((current) => ({ ...current, [label]: "Waiting for StudioNet acceptance" }));
+        },
         onStatus: (status) => setTransactionStatus((current) => ({ ...current, [label]: status }))
       });
       setTransactionHashes((current) => ({ ...current, [label]: result.txHash }));
       return result.txHash;
     } catch (caught) {
-      setTransactionStatus((current) => ({ ...current, [label]: "Failed" }));
+      setTransactionStatus((current) => ({ ...current, [label]: submittedHash ? "StudioNet acceptance pending" : "Failed" }));
       throw caught;
     } finally {
       setActiveTransaction(null);
@@ -387,6 +393,9 @@ function formatContractError(caught: unknown, fallback: string) {
   }
   if (/insufficient|funds|balance/i.test(message)) {
     return "Your wallet may not have enough StudioNet GEN for this transaction.";
+  }
+  if (/timeout|timed out|retries|receipt|accepted/i.test(message)) {
+    return "The wallet transaction was submitted, but StudioNet has not accepted it yet. Keep this page open, use the transaction hash shown below, and refresh in a few minutes.";
   }
   return message || fallback;
 }

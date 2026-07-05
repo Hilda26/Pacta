@@ -60,6 +60,7 @@ export async function writePactaContract(input: {
   action: ContractActionPayload;
   waitFor?: "ACCEPTED" | "FINALIZED";
   onStatus?: (status: string) => void;
+  onHash?: (txHash: string) => void;
 }) {
   const { contractAddress } = assertPactaContractConfig();
   const { TransactionStatus } = (await import("genlayer-js/types")) as {
@@ -78,7 +79,8 @@ export async function writePactaContract(input: {
     value: BigInt(input.action.value ?? "0")
   });
 
-  input.onStatus?.("Transaction submitted");
+  input.onHash?.(txHash);
+  input.onStatus?.("Transaction submitted. Waiting for StudioNet acceptance");
   const receipt = await client.waitForTransactionReceipt({
     hash: txHash,
     status: TransactionStatus[input.waitFor ?? "ACCEPTED"],
