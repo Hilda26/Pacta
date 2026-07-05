@@ -265,8 +265,8 @@ export default function CovenantDetailPage() {
     <AppShell>
       {covenant.isLoading ? <p className="text-sm font-medium text-stone-600">Loading covenant.</p> : null}
       {covenant.data ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <div className="grid gap-6">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid min-w-0 gap-6">
             <Panel>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -351,7 +351,7 @@ export default function CovenantDetailPage() {
             </Panel>
           </div>
 
-          <aside className="grid h-fit gap-6">
+          <aside className="grid h-fit min-w-0 gap-6">
             <Panel>
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-bold text-stone-950">Contract actions</h2>
@@ -420,10 +420,10 @@ function ActionRow({
   disabled?: boolean;
 }) {
   return (
-    <div className="rounded-md border border-stone-200 bg-stone-50 p-3">
+    <div className="min-w-0 rounded-md border border-stone-200 bg-stone-50 p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="font-semibold text-stone-900">{label}</span>
-        <div className="flex items-center gap-2">
+        <span className="min-w-0 font-semibold text-stone-900">{label}</span>
+        <div className="flex shrink-0 items-center gap-2">
           {onRun ? (
             <Button type="button" onClick={onRun} disabled={disabled}>
               <WalletCards aria-hidden className="size-4" />

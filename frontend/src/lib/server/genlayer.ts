@@ -1,4 +1,6 @@
 import { isAddress } from "viem";
+import { createAccount, createClient } from "genlayer-js";
+import * as chains from "genlayer-js/chains";
 import { badGateway, serviceUnavailable } from "./errors";
 import { optionalEnv } from "./env";
 
@@ -60,18 +62,11 @@ async function getClient() {
 }
 
 async function createGenLayerClient() {
-  const dynamicImport = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<unknown>;
-  const genlayer = (await dynamicImport("genlayer-js")) as {
-    createAccount: () => unknown;
-    createClient: (params: Record<string, unknown>) => GenLayerClient;
-  };
-  const chains = (await dynamicImport("genlayer-js/chains")) as Record<string, unknown>;
-
-  return genlayer.createClient({
-    chain: resolveChain(chains),
+  return createClient({
+    chain: resolveChain(chains as Record<string, unknown>),
     endpoint: rpcUrlForNetwork(),
-    account: genlayer.createAccount()
-  });
+    account: createAccount()
+  }) as GenLayerClient;
 }
 
 function resolveChain(chains: Record<string, unknown>): GenLayerChain {

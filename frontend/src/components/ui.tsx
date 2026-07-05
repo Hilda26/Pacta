@@ -39,10 +39,10 @@ export function TextField({
   ...props
 }: ComponentPropsWithoutRef<"input"> & { label: string; hint?: string }) {
   return (
-    <label className={clsx("grid gap-2 text-sm font-medium text-stone-800", className)}>
+    <label className={clsx("grid min-w-0 gap-2 text-sm font-medium text-stone-800", className)}>
       <span>{label}</span>
       <input
-        className="min-h-11 rounded-md border border-stone-300 bg-white px-3 text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+        className="min-h-11 w-full min-w-0 rounded-md border border-stone-300 bg-white px-3 text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
         {...props}
       />
       {hint ? <span className="text-xs font-normal text-stone-500">{hint}</span> : null}
@@ -57,10 +57,10 @@ export function TextAreaField({
   ...props
 }: ComponentPropsWithoutRef<"textarea"> & { label: string; hint?: string }) {
   return (
-    <label className={clsx("grid gap-2 text-sm font-medium text-stone-800", className)}>
+    <label className={clsx("grid min-w-0 gap-2 text-sm font-medium text-stone-800", className)}>
       <span>{label}</span>
       <textarea
-        className="min-h-28 rounded-md border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+        className="min-h-28 w-full min-w-0 rounded-md border border-stone-300 bg-white px-3 py-2 text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
         {...props}
       />
       {hint ? <span className="text-xs font-normal text-stone-500">{hint}</span> : null}
@@ -75,10 +75,10 @@ export function SelectField({
   ...props
 }: ComponentPropsWithoutRef<"select"> & { label: string; children: ReactNode }) {
   return (
-    <label className={clsx("grid gap-2 text-sm font-medium text-stone-800", className)}>
+    <label className={clsx("grid min-w-0 gap-2 text-sm font-medium text-stone-800", className)}>
       <span>{label}</span>
       <select
-        className="min-h-11 rounded-md border border-stone-300 bg-white px-3 text-stone-950 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+        className="min-h-11 w-full min-w-0 rounded-md border border-stone-300 bg-white px-3 text-stone-950 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
         {...props}
       >
         {children}
@@ -88,5 +88,5 @@ export function SelectField({
 }
 
 export function Panel({ className, ...props }: ComponentPropsWithoutRef<"section">) {
-  return <section className={clsx("rounded-lg border border-stone-200 bg-white p-5 shadow-sm", className)} {...props} />;
+  return <section className={clsx("min-w-0 rounded-lg border border-stone-200 bg-white p-5 shadow-sm", className)} {...props} />;
 }
