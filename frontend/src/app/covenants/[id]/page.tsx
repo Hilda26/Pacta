@@ -106,6 +106,9 @@ export default function CovenantDetailPage() {
       });
       setTransactionHashes((current) => ({ ...current, [label]: result.txHash }));
       return result.txHash;
+    } catch (caught) {
+      setTransactionStatus((current) => ({ ...current, [label]: "Failed" }));
+      throw caught;
     } finally {
       setActiveTransaction(null);
     }
@@ -371,7 +374,10 @@ function ReadBlock({ label, value }: { label: string; value: string }) {
 }
 
 function formatContractError(caught: unknown, fallback: string) {
-  const message = caught instanceof Error ? caught.message : String(caught || fallback);
+  const message = extractErrorMessage(caught);
+  if (!message || message === "[object Object]") {
+    return "Wallet provider conflict detected. Disable duplicate wallet extensions, keep MetaMask or one EVM wallet active, refresh the page, then try Create on StudioNet again.";
+  }
   if (/ethereum|provider|Cannot redefine property|Cannot set property/i.test(message)) {
     return "Wallet provider conflict detected. Disable duplicate wallet extensions, keep MetaMask or one EVM wallet active, refresh the page, then try Create on StudioNet again.";
   }
@@ -382,6 +388,35 @@ function formatContractError(caught: unknown, fallback: string) {
     return "Your wallet may not have enough StudioNet GEN for this transaction.";
   }
   return message || fallback;
+}
+
+function extractErrorMessage(caught: unknown): string {
+  if (caught instanceof Error) {
+    return caught.message;
+  }
+
+  if (typeof caught === "string") {
+    return caught;
+  }
+
+  if (caught && typeof caught === "object") {
+    const record = caught as Record<string, unknown>;
+    const candidates = [record.message, record.shortMessage, record.details, record.reason, record.cause, record.error];
+    for (const candidate of candidates) {
+      const message = extractErrorMessage(candidate);
+      if (message && message !== "[object Object]") {
+        return message;
+      }
+    }
+
+    try {
+      return JSON.stringify(record);
+    } catch {
+      return "";
+    }
+  }
+
+  return caught == null ? "" : String(caught);
 }
 
 function ActionRow({
