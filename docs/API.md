@@ -21,8 +21,8 @@ The backend exposes REST endpoints with OpenAPI documentation at `/docs`. API re
 - `POST /covenants/:covenantId/evidence` - register submitted evidence metadata.
 - `GET /covenants/:covenantId/evidence` - list evidence visible to the authenticated user.
 - `GET /genlayer/config` - return public GenLayer network and contract address.
-- `GET /genlayer/contract/covenants/:id` - read a covenant JSON payload from `0x6a7d7807612a5485e83E53c776fcfe35fE685C59`.
-- `GET /genlayer/contract/events/:eventId` - read an event JSON payload from `0x6a7d7807612a5485e83E53c776fcfe35fE685C59`.
+- `GET /genlayer/contract/covenants/:id` - read a covenant JSON payload from `0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2`.
+- `GET /genlayer/contract/events/:eventId` - read an event JSON payload from `0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2`.
 - `POST /genlayer/sync-events` - internal StudioNet event polling and PostgreSQL mirroring.
 - `POST /contract-events` - ingest trusted contract events using `x-pacta-internal-token`.
 - `GET /reputation/:walletAddress` - public reliability profile.
@@ -33,4 +33,4 @@ Wallet authentication uses one-time nonces and signed messages. Sessions are sto
 
 ## GenLayer
 
-The deployed StudioNet contract address is `0x6a7d7807612a5485e83E53c776fcfe35fE685C59`. Backend reads use `genlayer-js`; user writes should be signed in the browser wallet flow.
+The deployed StudioNet contract address is `0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2`. Backend reads use `genlayer-js`; user writes should be signed in the browser wallet flow.

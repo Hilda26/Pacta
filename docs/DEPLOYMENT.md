@@ -32,7 +32,7 @@ The local script checks environment setup and starts the Next.js app. Local API 
 The Pacta Intelligent Contract is deployed on StudioNet:
 
 ```text
-0x6a7d7807612a5485e83E53c776fcfe35fE685C59
+0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2
 ```
 
 Required GenLayer env:
@@ -40,8 +40,8 @@ Required GenLayer env:
 ```bash
 GENLAYER_NETWORK=studionet
 GENLAYER_RPC_URL=https://studio.genlayer.com/api
-GENLAYER_CONTRACT_ADDRESS=0x6a7d7807612a5485e83E53c776fcfe35fE685C59
+GENLAYER_CONTRACT_ADDRESS=0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2
 NEXT_PUBLIC_GENLAYER_NETWORK=studionet
 NEXT_PUBLIC_GENLAYER_RPC_URL=https://studio.genlayer.com/api
-NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS=0x6a7d7807612a5485e83E53c776fcfe35fE685C59
+NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS=0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2
 ```

@@ -3,7 +3,7 @@
 ## Deployed Contract
 
 - Network: StudioNet
-- Address: `0x6a7d7807612a5485e83E53c776fcfe35fE685C59`
+- Address: `0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2`
 - Contract file: `contracts/pacta_covenant_registry.py`
 
 ## SDK Integration
@@ -42,10 +42,10 @@ Production contract state reads are exposed through Next.js API routes under `/a
 ```bash
 GENLAYER_NETWORK=studionet
 GENLAYER_RPC_URL=https://studio.genlayer.com/api
-GENLAYER_CONTRACT_ADDRESS=0x6a7d7807612a5485e83E53c776fcfe35fE685C59
+GENLAYER_CONTRACT_ADDRESS=0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2
 NEXT_PUBLIC_GENLAYER_NETWORK=studionet
 NEXT_PUBLIC_GENLAYER_RPC_URL=https://studio.genlayer.com/api
-NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS=0x6a7d7807612a5485e83E53c776fcfe35fE685C59
+NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS=0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2
 ```
 
 Supabase is approved for Pacta backend data and storage. The Vercel-hosted Next.js API routes are the server boundary.

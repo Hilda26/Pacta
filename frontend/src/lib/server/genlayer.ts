@@ -86,7 +86,7 @@ function network() {
 function contractAddress() {
   const address = optionalEnv(
     "GENLAYER_CONTRACT_ADDRESS",
-    optionalEnv("NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS", "0x6a7d7807612a5485e83E53c776fcfe35fE685C59")
+    optionalEnv("NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS", "0xeBb262198DE067bf73cdAdF6d1C9f211cb1AF1a2")
   );
   if (!isAddress(address)) {
     throw serviceUnavailable("GENLAYER_CONTRACT_ADDRESS is not a valid address.");
