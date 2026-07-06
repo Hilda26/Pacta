@@ -385,7 +385,7 @@ function formatContractError(caught: unknown, fallback: string) {
   if (!message || message === "[object Object]") {
     return "Wallet provider conflict detected. Disable duplicate wallet extensions, keep MetaMask or one EVM wallet active, refresh the page, then try Create on StudioNet again.";
   }
-  if (/ethereum|provider|Cannot redefine property|Cannot set property/i.test(message)) {
+  if (/ethereum|provider|Cannot redefine property|Cannot set property|wallet extension|network switch|switching wallet/i.test(message)) {
     return "Wallet provider conflict detected. Disable duplicate wallet extensions, keep MetaMask or one EVM wallet active, refresh the page, then try Create on StudioNet again.";
   }
   if (/user rejected|rejected request|denied/i.test(message)) {

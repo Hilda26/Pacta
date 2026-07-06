@@ -69,7 +69,11 @@ export async function writePactaContract(input: {
   const client = await createPactaGenLayerWalletClient(input.walletAddress);
 
   input.onStatus?.("Switching wallet to StudioNet");
-  await client.connect?.(PACTA_GENLAYER_NETWORK);
+  await withTimeout(
+    client.connect?.(PACTA_GENLAYER_NETWORK) ?? Promise.resolve(),
+    30_000,
+    "Wallet network switch to StudioNet did not complete. Disable duplicate wallet extensions, keep one EVM wallet active, refresh, and try again."
+  );
 
   input.onStatus?.("Waiting for wallet approval");
   const txHash = await client.writeContract({
@@ -112,6 +116,21 @@ export async function readPactaContract<T>(functionName: string, args: unknown[]
   return value as T;
 }
 
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
 function resolveChain(chains: Record<string, unknown>): GenLayerChain {
   const sdkChain = chains[PACTA_GENLAYER_NETWORK] ?? chains.localnet;
   if (sdkChain) {
