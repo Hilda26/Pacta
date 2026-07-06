@@ -1,7 +1,6 @@
 # Pacta
 
-Pacta is a bond-backed personal covenant registry powered by GenLayer. Users create meaningful promises, back them with GEN stakes, submit evidence, and rely on GenLayer Intelligent Contracts plus AI-assisted validator consensus to determine fulfillment outcomes.
-
+Pacta is a bonded mentorship covenant verifier powered by GenLayer. It uses GenLayer validators, web evidence fetching, and LLM consensus to decide whether a mentorship promise was fulfilled.
 ## Stack
 
 - Web app and API: Next.js, TypeScript, Tailwind CSS, Vercel route handlers
