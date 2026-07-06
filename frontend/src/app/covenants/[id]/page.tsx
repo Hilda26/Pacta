@@ -8,7 +8,7 @@ import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button, IconButton, Panel, SelectField, TextAreaField, TextField } from "@/components/ui";
 import { bondsApi, covenantsApi, evidenceApi, genlayerApi } from "@/lib/api/pacta";
-import type { EvidenceType } from "@/lib/api/types";
+import type { EvidenceItem, EvidenceType } from "@/lib/api/types";
 import {
   buildBondCovenantAction,
   buildCreateCovenantAction,
@@ -280,10 +280,20 @@ export default function CovenantDetailPage() {
                   <TextField name="contentHash" label="Content hash" placeholder="sha256:..." required minLength={16} />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextField name="sourceUrl" label="Source URL" placeholder="https://..." />
+                  <TextField
+                    name="sourceUrl"
+                    label="Public evidence URL"
+                    placeholder="https://..."
+                    hint="Fetched by the GenLayer contract during validator evaluation."
+                  />
                   <TextField name="storageUri" label="Storage URI" placeholder="r2://bucket/key" />
                 </div>
-                <TextAreaField name="notes" label="Notes for validators (optional)" placeholder="Summarize what this evidence proves." />
+                <TextAreaField
+                  name="notes"
+                  label="Validator notes"
+                  placeholder="Summarize what this evidence proves and which requirement it supports."
+                  hint="Stored as hashed metadata; use the public URL for content the contract should fetch."
+                />
                 {evidenceError ? <p className="rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{evidenceError}</p> : null}
                 <div>
                   <Button disabled={evidence.isPending || Boolean(activeTransaction)}>
@@ -292,6 +302,7 @@ export default function CovenantDetailPage() {
                   </Button>
                 </div>
               </form>
+              <EvidenceList items={covenant.data.evidenceItems} />
             </Panel>
 
             <Panel>
@@ -344,7 +355,7 @@ export default function CovenantDetailPage() {
                   disabled={Boolean(covenant.data.contractCovenantId) || Boolean(activeTransaction) || !createAction}
                 />
                 <ActionRow label="Bond GEN" description="After the covenant is created on StudioNet, use the bond form below to stake GEN." />
-                <ActionRow label="Request evaluation" description="After evidence and a bond are saved, request validator review from the evaluation form." />
+                <ActionRow label="Request evaluation" description="Runs GenLayer validator review against covenant terms, submitted evidence, and fetched public URLs." />
               </div>
               <TransactionProgress statuses={transactionStatus} hashes={transactionHashes} />
             </Panel>
@@ -357,9 +368,12 @@ export default function CovenantDetailPage() {
                 </IconButton>
               </div>
               {covenant.data.contractCovenantId ? (
-                <pre className="mt-4 max-h-80 overflow-auto rounded-md bg-stone-950 p-4 text-xs leading-6 text-stone-50">
-                  {JSON.stringify(contractRead.data ?? {}, null, 2)}
-                </pre>
+                <>
+                  <ContractOutcomeSummary state={contractRead.data} />
+                  <pre className="mt-4 max-h-80 overflow-auto rounded-md bg-stone-950 p-4 text-xs leading-6 text-stone-50">
+                    {JSON.stringify(contractRead.data ?? {}, null, 2)}
+                  </pre>
+                </>
               ) : (
                 <p className="mt-4 text-sm text-stone-600">No contract covenant id is linked yet.</p>
               )}
@@ -378,6 +392,121 @@ function ReadBlock({ label, value }: { label: string; value: string }) {
       <p className="mt-2 whitespace-pre-wrap leading-7 text-stone-850">{value}</p>
     </div>
   );
+}
+
+
+function EvidenceList({ items }: { items: EvidenceItem[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-6 grid gap-3">
+      {items.map((item) => {
+        const notes = typeof item.structuredMetadata?.notes === "string" ? item.structuredMetadata.notes : "";
+        return (
+          <div key={item.id} className="rounded-md border border-stone-200 bg-stone-50 p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="font-bold text-stone-900">{item.type.replaceAll("_", " ")}</span>
+              <span className="font-mono text-xs text-stone-600">{item.contentHash}</span>
+            </div>
+            {item.sourceUrl ? (
+              <a className="mt-2 block break-all font-semibold text-emerald-800 hover:text-emerald-900" href={item.sourceUrl} target="_blank" rel="noreferrer">
+                {item.sourceUrl}
+              </a>
+            ) : null}
+            {item.storageUri ? <p className="mt-2 break-all text-stone-600">{item.storageUri}</p> : null}
+            {notes ? <p className="mt-2 leading-6 text-stone-700">{notes}</p> : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ContractOutcomeSummary({ state }: { state: Record<string, unknown> | undefined }) {
+  if (!state || Object.keys(state).length === 0) {
+    return <p className="mt-4 text-sm text-stone-600">Contract state will appear after StudioNet accepts the transaction.</p>;
+  }
+
+  const outcome = asText(state.outcome_status || state.status);
+  const confidence = asNumber(state.confidence);
+  const fetchedUrlCount = asNumber(state.fetched_url_count);
+  const independentSources = asNumber(state.independent_sources_count);
+  const crossCheck = asText(state.cross_check_summary);
+  const riskFlags = asStringArray(state.risk_flags);
+  const sourceChecks = asSourceChecks(state.source_checks);
+
+  return (
+    <div className="mt-4 grid gap-3 rounded-md border border-stone-200 bg-stone-50 p-3 text-sm">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Metric label="Outcome" value={outcome || "Pending"} />
+        <Metric label="Confidence" value={confidence ? `${confidence}%` : "Pending"} />
+        <Metric label="Fetched URLs" value={String(fetchedUrlCount)} />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Metric label="Independent sources" value={String(independentSources)} />
+        <Metric label="Consensus review" value={crossCheck || "Awaiting evaluation"} />
+      </div>
+      {sourceChecks.length > 0 ? (
+        <div className="grid gap-2">
+          {sourceChecks.map((check) => (
+            <div key={`${check.url}-${check.summary}`} className="rounded-md border border-stone-200 bg-white p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-bold text-stone-900">{check.relevance}</span>
+                <span className="text-xs font-semibold text-stone-500">{check.fetched ? "Fetched" : "Not fetched"}</span>
+              </div>
+              {check.url ? <p className="mt-2 break-all font-mono text-xs text-stone-600">{check.url}</p> : null}
+              {check.summary ? <p className="mt-2 leading-6 text-stone-700">{check.summary}</p> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {riskFlags.length > 0 ? <p className="rounded-md bg-amber-50 p-3 font-semibold text-amber-950">{riskFlags.join("; ")}</p> : null}
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 rounded-md border border-stone-200 bg-white p-3">
+      <p className="text-xs font-bold uppercase text-stone-500">{label}</p>
+      <p className="mt-1 break-words font-semibold text-stone-950">{value}</p>
+    </div>
+  );
+}
+
+function asText(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function asNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function asStringArray(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function asSourceChecks(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+    const record = item as Record<string, unknown>;
+    return [
+      {
+        url: asText(record.url),
+        fetched: record.fetched === true,
+        relevance: asText(record.relevance) || "INCONCLUSIVE",
+        summary: asText(record.summary)
+      }
+    ];
+  });
 }
 
 function formatContractError(caught: unknown, fallback: string) {

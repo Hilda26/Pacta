@@ -28,3 +28,7 @@ Pacta is a bond-backed personal covenant registry powered by GenLayer. Users cre
 - `security/` - threat model and security checklists
 - `e2e/` - Playwright flows
 - `tests/` - cross-package integration tests
+
+## Submission Focus
+
+For review, Pacta should be demonstrated as a bonded mentorship covenant verifier: a creator promises to mentor five students, bonds GEN, submits public evidence URLs and attestations, then requests GenLayer evaluation. The Intelligent Contract fetches public evidence URLs, invokes an LLM inside a nondeterministic block, and requires validators to independently cross-check the leader assessment before bond settlement and reputation updates are stored.

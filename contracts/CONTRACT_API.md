@@ -25,3 +25,20 @@ This contract uses schema-friendly public signatures. Complex values are returne
 ## JSON Reads
 
 The JSON-returning views are intentionally used instead of dataclass/list returns. This follows the conservative schema-loading pattern from the GenLayer docs and Skills examples.
+
+## Evaluation Output
+
+`request_evaluation` returns a JSON string and stores the same normalized outcome in the covenant JSON. The outcome includes:
+
+- `status` - `FULFILLED`, `PARTIALLY_FULFILLED`, or `BROKEN`
+- `confidence` - validator confidence from 0 to 100
+- `reasoning` - concise explanation
+- `return_bps` and `slash_bps` - bond distribution basis points
+- `reputation_delta` - creator reputation change
+- `independent_sources_count` - corroborating non-duplicate sources
+- `fetched_url_count` - public evidence URLs fetched by the contract
+- `cross_check_summary` - how separate sources agreed or conflicted
+- `risk_flags` - missing, stale, unverifiable, or conflicting evidence warnings
+- `source_checks` - per-source fetch and relevance summaries
+
+The validator function independently reruns the evidence fetch and LLM assessment, then accepts the leader result only when normalized status, confidence, and bond-return bands are close enough for consensus.

@@ -36,3 +36,7 @@ External web reads and LLM calls happen only inside nondeterministic blocks. Det
 8. GenLayer validators evaluate covenant terms, evidence references, and public web context.
 9. Contract stores the canonical outcome and bond claim accounting.
 10. API routes expose contract state reads and Supabase-backed read models.
+
+## Submission Boundary
+
+Pacta is broad enough to model many promises, but the submission demo should be framed narrowly: bonded mentorship covenant verification. That flow best demonstrates GenLayer because success depends on ambiguous, real-world evidence such as public project links, student attestations, calendars, and repository activity. The contract cross-checks public evidence URLs inside GenLayer and stores the consensus summary in contract state.

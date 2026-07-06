@@ -43,9 +43,18 @@ class ContractStaticTests(unittest.TestCase):
 
     def test_contract_keeps_nondeterminism_in_evaluation_method(self):
         source = CONTRACT.read_text(encoding="utf-8")
+        self.assertIn("gl.nondet.web.get", source)
         self.assertIn("gl.nondet.exec_prompt", source)
         self.assertIn("gl.vm.run_nondet_unsafe", source)
         self.assertLess(source.index("def request_evaluation"), source.index("gl.nondet.exec_prompt"))
+
+    def test_validators_independently_cross_check_leader_assessment(self):
+        source = CONTRACT.read_text(encoding="utf-8")
+        self.assertIn("validator_assessment = leader_fn()", source)
+        self.assertIn("def _assessments_agree", source)
+        self.assertIn("independent_sources_count", source)
+        self.assertIn("source_checks", source)
+        self.assertIn("cross_check_summary", source)
 
 
 if __name__ == "__main__":

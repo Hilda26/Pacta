@@ -49,3 +49,15 @@ NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS=0x6a7d7807612a5485e83E53c776fcfe35fE685C59
 ```
 
 Supabase is approved for Pacta backend data and storage. The Vercel-hosted Next.js API routes are the server boundary.
+
+## Submission-Grade Consensus Path
+
+The upgraded contract evaluation path is intentionally narrow and reviewer-facing:
+
+1. `request_evaluation` collects the covenant terms and up to 20 evidence records.
+2. It extracts up to 3 public `http/https` evidence URLs.
+3. Inside the nondeterministic block, the leader fetches those URLs with `gl.nondet.web.get()` and asks the LLM for a structured assessment.
+4. Validators independently run the same fetch-and-assess workflow, then compare their normalized result with the leader through `_assessments_agree`.
+5. Deterministic bond settlement, reputation updates, and event emission happen only after GenLayer consensus returns.
+
+The canonical assessment now records `independent_sources_count`, `fetched_url_count`, `cross_check_summary`, `risk_flags`, and `source_checks` so reviewers can see whether the result came from real external evidence or weak self-attestation.
