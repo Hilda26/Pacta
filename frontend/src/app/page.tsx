@@ -1,4 +1,4 @@
-import { ArrowRight, DatabaseZap, Scale, ShieldCheck } from "lucide-react";
+import { ArrowRight, DatabaseZap, FileText, Scale, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { PACTA_GENLAYER_CONTRACT_ADDRESS } from "@/lib/genlayer/config";
 
@@ -26,6 +26,13 @@ export default function HomePage() {
             >
               Open dashboard
               <ArrowRight aria-hidden className="size-4" />
+            </Link>
+            <Link
+              href="/submission"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-stone-300 bg-white px-5 text-sm font-semibold text-stone-900 transition hover:bg-stone-50"
+            >
+              <FileText aria-hidden className="size-4" />
+              Review submission
             </Link>
             <Link
               href="/login"
