@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { HttpError } from "./errors";
+import { HttpError, serviceUnavailable } from "./errors";
 import { requiredEnv } from "./env";
 
 let cachedClient: SupabaseClient | undefined;
@@ -17,9 +17,7 @@ export function supabaseAdmin() {
 }
 
 export function ensure<T>(data: T | null, error: { message: string } | null, context: string): T {
-  if (error) {
-    throw new HttpError(500, `${context}: ${error.message}`);
-  }
+  throwIfError(error, context);
   if (data === null) {
     throw new HttpError(500, `${context}: empty response`);
   }
@@ -27,14 +25,24 @@ export function ensure<T>(data: T | null, error: { message: string } | null, con
 }
 
 export function ensureArray<T>(data: T[] | null, error: { message: string } | null, context: string): T[] {
-  if (error) {
-    throw new HttpError(500, `${context}: ${error.message}`);
-  }
+  throwIfError(error, context);
   return data ?? [];
 }
 
 export function throwIfError(error: { message: string } | null, context: string) {
-  if (error) {
-    throw new HttpError(500, `${context}: ${error.message}`);
+  if (!error) {
+    return;
   }
+
+  if (isSupabaseNetworkFailure(error.message)) {
+    throw serviceUnavailable(
+      "Pacta could not reach its Supabase backend. Confirm the Supabase project is active and SUPABASE_URL points to a reachable project URL."
+    );
+  }
+
+  throw new HttpError(500, `${context}: ${error.message}`);
+}
+
+function isSupabaseNetworkFailure(message: string) {
+  return /fetch failed|failed to fetch|network|ENOTFOUND|EAI_AGAIN|ECONNRESET|ECONNREFUSED|ETIMEDOUT/i.test(message);
 }

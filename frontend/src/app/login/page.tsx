@@ -4,6 +4,7 @@ import { WalletCards } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ApiError } from "@/lib/api/client";
 import { authApi } from "@/lib/api/pacta";
 import { hasInjectedWallet, requestWalletAddress, signWalletMessage } from "@/lib/auth/wallet";
 import { Button, Panel } from "@/components/ui";
@@ -24,7 +25,7 @@ export default function LoginPage() {
       await queryClient.invalidateQueries({ queryKey: ["session"] });
       router.replace("/dashboard");
     },
-    onError: (caught) => setError(caught instanceof Error ? caught.message : "Wallet sign-in failed.")
+    onError: (caught) => setError(formatLoginError(caught))
   });
 
   return (
@@ -52,4 +53,15 @@ export default function LoginPage() {
       </Panel>
     </main>
   );
+}
+function formatLoginError(caught: unknown) {
+  if (caught instanceof ApiError && caught.status === 503) {
+    return "Pacta could not reach its Supabase backend, so wallet sign-in cannot create a nonce yet. Please try again after the backend project is active.";
+  }
+
+  if (caught instanceof Error) {
+    return caught.message;
+  }
+
+  return "Wallet sign-in failed.";
 }
